@@ -15,7 +15,7 @@
         state: absent
     - name: Copy new config file nginx
       ansible.builtin.copy:
-        src: /opt/testovoe/repository/balancer
+        src: ./repository/balancer
         dest: /etc/nginx/sites-enabled/
         mode: '0644'
         owner: www-data

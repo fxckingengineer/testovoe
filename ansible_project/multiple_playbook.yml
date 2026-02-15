@@ -7,7 +7,7 @@
       ansible.builtin.wait_for_connection:
         timeout: 30
 
-- import_playbook: /opt/testovoe/playbooks/install_psql.yml
-- import_playbook: /opt/testovoe/playbooks/psql.yml
-- import_playbook: /opt/testovoe/playbooks/docker.yml
-- import_playbook: /opt/testovoe/playbooks/install_nginx.yml
+- import_playbook: ./playbooks/install_psql.yml
+- import_playbook: ./playbooks/psql.yml
+- import_playbook: ./playbooks/docker.yml
+- import_playbook: ./playbooks/install_nginx.yml

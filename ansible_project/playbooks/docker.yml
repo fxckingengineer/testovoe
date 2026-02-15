@@ -12,7 +12,7 @@
       mode: '0755'
   - name: Copy docker-compose.yml
     ansible.builtin.copy:
-      src: /opt/testovoe/repository/docker-compose.yml
+      src: ./repository/docker-compose.yml
       dest: /opt/backend/docker-compose.yml
       owner: root
       group: root

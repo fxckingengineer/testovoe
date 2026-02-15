@@ -46,7 +46,13 @@
 
 > Для начала работы нужно сгенерировать ssh-key и публичный ключ переименовать в ansible.pub(Можно не переименовывать, а своё название поменять в скрипте newUser.sh)
 
-> Private ключ нужно будет скопировать на хост ansible.
+```Bash
+ssh-keygen -t ed25519 -f ./ansible -C "ansible-key"
+```
+
+Можно использовать данную команду внутри самого проекта в директории /testovoe, она создаст публичный и приватный ключ с именами **ansible.pub** и **ansible** соответственно
+
+> Private ключ нужно будет скопировать на хост ansible в домашнюю директорию по пути `/home/**username**/.ssh/`.
 
 > [!INFO] Все файлы для `vagrant` должны лежать в одной директории
 
@@ -153,12 +159,15 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 
 inventory/hosts.ini
 
+> **ansible_ssh_private_key_file=/home/username/.ssh/ansible**
+> **username** нужно заменить на имя вашего пользователя.
+
 ```YAML
 [test]
 
-psql ansible_host=192.168.56.10 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/ansible
-backend ansible_host=192.168.56.20 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/ansible
-balancer ansible_host=192.168.56.30 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/ansible
+psql ansible_host=192.168.56.10 ansible_user=ansible ansible_ssh_private_key_file=/home/username/.ssh/ansible
+backend ansible_host=192.168.56.20 ansible_user=ansible ansible_ssh_private_key_file=/home/username/.ssh/ansible
+balancer ansible_host=192.168.56.30 ansible_user=ansible ansible_ssh_private_key_file=/home/username/.ssh/ansible
 ```
 
 В данном файле содержится информация о хостах, под каким пользователем они подключаются и откуда брать приватный ключ при подключении.

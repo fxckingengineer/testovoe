@@ -1,8 +1,8 @@
 upstream python_backend {
     least_conn;
-    server 192.168.0.131:8000;
-    server 192.168.0.131:8001;
-    server 192.168.0.131:8002;
+    server 192.168.56.20:8000;
+    server 192.168.56.20:8001;
+    server 192.168.56.20:8002;
 }
 
 server {

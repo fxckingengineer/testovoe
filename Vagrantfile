@@ -1,7 +1,7 @@
 nodes = [
-  { hostname: 'psql',     ip: '192.168.0.130', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' },
-  { hostname: 'backend',  ip: '192.168.0.131', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' },
-  { hostname: 'balancer', ip: '192.168.0.132', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' }
+  { hostname: 'psql',     ip: '192.168.56.10', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' },
+  { hostname: 'backend',  ip: '192.168.56.20', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' },
+  { hostname: 'balancer', ip: '192.168.56.30', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' }
 ]
 
 
@@ -13,10 +13,9 @@ Vagrant.configure("2") do |config|
       nodeconfig.vm.box = node[:boxname]
       nodeconfig.vm.hostname = node[:hostname]
 
-      nodeconfig.vm.network :public_network,
-        ip: node[:ip],
-        bridge: "Hyper-V Virtual Ethernet Adapter #2"
-
+      nodeconfig.vm.network :private_network,
+        ip: node[:ip]
+        
       nodeconfig.vm.provider :virtualbox do |vb|
         vb.memory = node[:memory]
         vb.cpus  = node[:cpu]

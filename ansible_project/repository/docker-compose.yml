@@ -6,7 +6,7 @@ services:
     ports:
       - 8000:8000
     environment:
-      - DB_HOST=192.168.0.130
+      - DB_HOST=192.168.56.10
       - DB_USER=testuser
       - DB_PASSWORD=password
       - DB_NAME=testdb
@@ -15,7 +15,7 @@ services:
     ports:
       - 8001:8000
     environment:
-      - DB_HOST=192.168.0.130
+      - DB_HOST=192.168.56.10
       - DB_USER=testuser
       - DB_PASSWORD=password
       - DB_NAME=testdb
@@ -24,7 +24,7 @@ services:
     ports:
       - 8002:8000
     environment:
-      - DB_HOST=192.168.0.130
+      - DB_HOST=192.168.56.10
       - DB_USER=testuser
       - DB_PASSWORD=password
       - DB_NAME=testdb

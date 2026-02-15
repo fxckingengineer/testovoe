@@ -1,12 +1,13 @@
 
 # Содержание
 
+**Не проводил тестирование на Linux и MacOS, но чисто технически если использовать связку VirtualBox + Vagrant + Ansible, должно так же работать без проблем, без изменения в конфигах.**
 ## Используемый софт
 
 - Vagrant (на Windows машине)
 - VirtualBox (на Windows машине)
 - Ansible (в WSL)
-- Docker (в ВМ, которая будет создана в будущем)
+- Docker (в ВМ backend, которая будет создана в будущем)
 
 ## Все файлы для работы
 
@@ -27,6 +28,9 @@
 	- install_nginx.yml (Установка и настройка nginx)
 - repository/docker-compose.yml (Сам compose который мы запускаем)
 - repository/balancer (конфиг nginx)
+
+>[!INFO] Все файлы для ansible хранятся в папке **ansible_project**. Их нужно будет переместить любым удобным способом на хост WSL, если запуск происходит по схеме Windows(Vagrant) + WSL(Ansible)
+
 # Начало работы. Установка нужного софта
 
 Установка `Vagrant` с офф сайта https://developer.hashicorp.com/vagrant/install
@@ -59,11 +63,13 @@ vagrant up
 
 Сам `vagrantfile` выглядит так:
 
+>[!INFO] Устанавливал через VPN, поэтому использовал офф сайт, но лучше использовать зеркало образов. В начале файла VagrantFile нужно написать `ENV['VAGRANT_SERVER_URL'] = 'https://vagrant.elab.pro'` И использовать box который нужен. Чтобы посмотреть все имеющиеся боксы, можно перейти по ссылке указанной выше.
+
 ```Ruby
 nodes = [
-  { hostname: 'psql',     ip: '192.168.0.130', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' },
-  { hostname: 'backend',  ip: '192.168.0.131', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' },
-  { hostname: 'balancer', ip: '192.168.0.132', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' }
+  { hostname: 'psql',     ip: '192.168.56.10', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' },
+  { hostname: 'backend',  ip: '192.168.56.20', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' },
+  { hostname: 'balancer', ip: '192.168.56.30', memory: 1024, cpu: 1, boxname: 'ubuntu/jammy64' }
 ]
 
 Vagrant.configure("2") do |config|
@@ -73,9 +79,8 @@ Vagrant.configure("2") do |config|
       nodeconfig.vm.box = node[:boxname]
       nodeconfig.vm.hostname = node[:hostname]
       
-      nodeconfig.vm.network :public_network,
-        ip: node[:ip],
-        bridge: "Hyper-V Virtual Ethernet Adapter #2"
+      nodeconfig.vm.network :private_network,
+        ip: node[:ip]
         
       nodeconfig.vm.provider :virtualbox do |vb|
         vb.memory = node[:memory]
@@ -93,18 +98,9 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-Создаются 3 ВМ с публичными ip (Нужно использовать подсеть вашего роутера, если делаете по той же схеме как я), у этих 3-ех ВМ 1Гб ОЗУ и 1 CPU, бокс с ОС берётся с офф. сайта: https://portal.cloud.hashicorp.com/vagrant/discover?providers=virtualbox&query=ubuntu%2Fjammy
+Создаются 3 ВМ, с параметрами 1Гб ОЗУ и 1 CPU, бокс с ОС берётся с офф. сайта: https://portal.cloud.hashicorp.com/vagrant/discover?providers=virtualbox&query=ubuntu%2Fjammy
 
 В качестве ОС выбрана Ubuntu/jammy.
-
-В строке:
-```Ruby
-nodeconfig.vm.network :public_network,
-  ip: node[:ip],
-  bridge: "Hyper-V Virtual Ethernet Adapter #2"      
-```
-
-Нужно заменить строку bridge, если конфигурация Win+WSL.
 
 Скрипт **newUser.sh** создает пользователя с именем ansible, он нам нужен для запуска playbook's.
 
@@ -160,9 +156,9 @@ inventory/hosts.ini
 ```YAML
 [test]
 
-psql ansible_host=192.168.0.130 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/ansible
-backend ansible_host=192.168.0.131 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/ansible
-balancer ansible_host=192.168.0.132 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/ansible
+psql ansible_host=192.168.56.10 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/ansible
+backend ansible_host=192.168.56.20 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/ansible
+balancer ansible_host=192.168.56.30 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/ansible
 ```
 
 В данном файле содержится информация о хостах, под каким пользователем они подключаются и откуда брать приватный ключ при подключении.
@@ -259,7 +255,7 @@ Timeout нужен для того, чтобы подключение точно
   - name: Change pg_hba.conf
     ansible.builtin.lineinfile:
       path: /etc/postgresql/18/main/pg_hba.conf
-      line: host    all             all             192.168.0.0/24          scram-sha-256
+      line: host    all             all             192.168.56.0/24          scram-sha-256
   - name: Restart service postgresql
     ansible.builtin.service:
       name: postgresql
@@ -352,7 +348,7 @@ services:
     ports:
       - 8000:8000
     environment:
-      - DB_HOST=192.168.0.130
+      - DB_HOST=192.168.56.10
       - DB_USER=testuser
       - DB_PASSWORD=password
       - DB_NAME=testdb
@@ -361,7 +357,7 @@ services:
     ports:
       - 8001:8000
     environment:
-      - DB_HOST=192.168.0.130
+      - DB_HOST=192.168.56.10
       - DB_USER=testuser
       - DB_PASSWORD=password
       - DB_NAME=testdb
@@ -370,7 +366,7 @@ services:
     ports:
       - 8002:8000
     environment:
-      - DB_HOST=192.168.0.130
+      - DB_HOST=192.168.56.10
       - DB_USER=testuser
       - DB_PASSWORD=password
       - DB_NAME=testdb
@@ -418,7 +414,7 @@ services:
 На хосте с которого можно подключится к хосту balancer или на самом balancer выполняем команду: 
 
 ```bash
-curl -I 192.168.0.132/health
+curl -I 192.168.56.30 //чтобы увидеть работает ли балансировка
 ```
 
 Получаем вывод: 
@@ -441,6 +437,16 @@ X-Upstream: 192.168.0.131:8000
 - 8001
 - 8002
 
+Чтобы увидеть содержимое, можно открыть в строке браузера хостовой машины(WIndows) страницу: 
+- **192.168.56.30/health** - Должен показать статус **OK**
+- **192.168.56.30/users** - Покажет созданных пользователей в БД(Они создаются автоматически если БД пустая)
+
+Либо можно использовать `curl`
+
+```Bash
+curl 192.168.56.30/health
+curl 192.168.56.30/users
+```
 # P.S. Масштабирование.
 
 В данной конфигурации можно поменять **docker-compose.yml** и добавить 4 контейнер, изменив только имя и внешний порт.

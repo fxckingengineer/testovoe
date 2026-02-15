@@ -1,0 +1,26 @@
+---
+- name: Install nginx
+  hosts: balancer
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Install nginx package
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+    - name: Remove default file nginx
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled
+        state: absent
+    - name: Copy new config file nginx
+      ansible.builtin.copy:
+        src: /opt/testovoe/repository/balancer
+        dest: /etc/nginx/sites-enabled/
+        mode: '0644'
+        owner: www-data
+        group: www-data
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

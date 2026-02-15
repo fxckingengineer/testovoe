@@ -1,0 +1,30 @@
+---
+
+services:
+  web-1:
+    image: m1sse/fastapi-backend
+    ports:
+      - 8000:8000
+    environment:
+      - DB_HOST=192.168.0.130
+      - DB_USER=testuser
+      - DB_PASSWORD=password
+      - DB_NAME=testdb
+  web-2:
+    image: m1sse/fastapi-backend
+    ports:
+      - 8001:8000
+    environment:
+      - DB_HOST=192.168.0.130
+      - DB_USER=testuser
+      - DB_PASSWORD=password
+      - DB_NAME=testdb
+  web-3:
+    image: m1sse/fastapi-backend
+    ports:
+      - 8002:8000
+    environment:
+      - DB_HOST=192.168.0.130
+      - DB_USER=testuser
+      - DB_PASSWORD=password
+      - DB_NAME=testdb

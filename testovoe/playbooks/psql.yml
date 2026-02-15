@@ -1,0 +1,29 @@
+---
+
+- name: Create DB
+  hosts: psql
+  become: true
+  become_user: postgres
+  gather_facts: false
+  tasks:
+  - name: Create new Database
+    community.postgresql.postgresql_db:
+      name: testdb
+  - name: Create new user in PSQL
+    community.postgresql.postgresql_user:
+      login_db: testdb
+      name: testuser
+      password: password
+  - name: Set owner as testuser in db testdb
+    community.postgresql.postgresql_owner:
+      login_db: testdb
+      new_owner: testuser
+      obj_name: testdb
+      obj_type: database
+  - name: GRANT ALL PRIVILEGES ON DATABASE testdb TO testuser
+    community.postgresql.postgresql_privs:
+      login_db: testdb
+      privs: ALL
+      type: database
+      obj: testdb
+      role: testuser

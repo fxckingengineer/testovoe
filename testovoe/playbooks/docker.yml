@@ -1,0 +1,26 @@
+---
+
+- name: Start docker compose
+  hosts: backend
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Create project dir
+    ansible.builtin.file:
+      path: /opt/backend
+      state: directory
+      mode: '0755'
+  - name: Copy docker-compose.yml
+    ansible.builtin.copy:
+      src: /opt/testovoe/repository/docker-compose.yml
+      dest: /opt/backend/docker-compose.yml
+      owner: root
+      group: root
+      mode: '0644'
+  - name: Run docker compose
+    community.docker.docker_compose_v2:
+      project_src: /opt/backend
+  - name: Restart docker compose
+    community.docker.docker_compose_v2:
+      project_src: /opt/backend
+      state: restarted

@@ -1,0 +1,53 @@
+---
+
+- name: Install python and psql
+  hosts: psql
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Install pkg
+    ansible.builtin.apt:
+      update_cache: true
+      pkg:
+      - python3
+      - python3-pip
+      - python3-venv
+      - python3-dev
+      - build-essential
+      - libxml2-dev
+      - libxslt1-dev
+      - libffi-dev
+      - libpq-dev
+      - libssl-dev
+      - zlib1g-dev
+      - curl
+      - ca-certificates
+      - gnupg2
+      - python3-psycopg2
+  - name: Install Postgresql-common
+    ansible.builtin.apt:
+      update_cache: true
+      name: postgresql-common
+  - name: Add Repository PSQL
+    ansible.builtin.shell:
+      cmd: printf "\n" | /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+  - name: Install PSQL
+    ansible.builtin.apt:
+      update_cache: true
+      name: postgresql
+  - name: Replace a listen_addresses in postgresql.conf
+    ansible.builtin.lineinfile:
+      path: /etc/postgresql/18/main/postgresql.conf
+      search_string: 'listen_addresses'
+      line: listen_addresses = '*'
+      owner: root
+      group: root
+      mode: '0644'
+  - name: Change pg_hba.conf
+    ansible.builtin.lineinfile:
+      path: /etc/postgresql/18/main/pg_hba.conf
+      line: host    all             all             192.168.0.0/24          scram-sha-256
+  - name: Restart service postgresql
+    ansible.builtin.service:
+      name: postgresql
+      state: restarted
